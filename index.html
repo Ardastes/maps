@@ -9,15 +9,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
+    :root {
+      --bg-light: #f5f7fa;
+      --bg-dark: #1e1e1e;
+      --text-light: #333;
+      --text-dark: #f5f5f5;
+      --card-bg-light: white;
+      --card-bg-dark: #2c2c2c;
+    }
+
     body {
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
+      background-color: var(--bg-light);
+      color: var(--text-light);
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
 
     header {
@@ -25,11 +35,25 @@
       color: white;
       padding: 2rem;
       text-align: center;
+      position: relative;
     }
 
     header h1 {
       margin: 0;
       font-size: 2rem;
+    }
+
+    .toggle-theme {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: white;
+      color: #003366;
+      border: 1px solid #ccc;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
     }
 
     main {
@@ -39,7 +63,7 @@
       margin: auto;
     }
 
-    section {
+    .section {
       margin-bottom: 3rem;
     }
 
@@ -53,6 +77,7 @@
       border-bottom: 2px solid #00336633;
       padding-bottom: 0.3em;
       margin-bottom: 1em;
+      cursor: pointer;
     }
 
     .card-grid {
@@ -62,12 +87,12 @@
     }
 
     .card {
-      background: white;
+      background: var(--card-bg-light);
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       padding: 1.5rem;
       text-align: center;
-      transition: transform 0.2s ease-in-out;
+      transition: transform 0.2s ease-in-out, background 0.3s;
     }
 
     .card:hover {
@@ -89,6 +114,25 @@
       color: #666;
       background: #f0f0f0;
     }
+
+    .collapsed .card-grid {
+      display: none;
+    }
+
+    body.dark-mode {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    body.dark-mode .card {
+      background-color: var(--card-bg-dark);
+    }
+
+    body.dark-mode .toggle-theme {
+      background: #2c2c2c;
+      color: white;
+      border-color: #555;
+    }
   </style>
 </head>
 <body>
@@ -99,36 +143,40 @@
   </header>
 
   <main>
-
-    <section>
-      <div class="section-title">🇨🇭 Switzerland</div>
+    <div class="section">
+      <div class="section-title" onclick="toggleSection(this.parentElement)">🇨🇭 Switzerland</div>
       <div class="card-grid">
-        <div class="card">
-          <a href="Swiss_Population_2023.html">Population (2023)</a>
-        </div>
-        <div class="card">
-          <a href="Swiss_GDP_per_capita_2023.html">GDP per Capita (2023)</a>
-        </div>
-        <div class="card">
-          <a href="Swiss_GDPR_2022.html">GDPR (2022)</a>
-        </div>
+        <div class="card"><a href="Swiss_Population_2023.html">Population (2023)</a></div>
+        <div class="card"><a href="Swiss_GDP_per_capita_2023.html">GDP per Capita (2023)</a></div>
+        <div class="card"><a href="Swiss_GDPR_2022.html">GDPR (2022)</a></div>
       </div>
-    </section>
+    </div>
 
-    <section>
-      <div class="section-title">🇹🇷 Türkiye</div>
+    <div class="section">
+      <div class="section-title" onclick="toggleSection(this.parentElement)">🇹🇷 Türkiye</div>
       <div class="card-grid">
-        <div class="card">
-          <a href="Turkish_Population_2024.html">Population (2024)</a>
-        </div>
+        <div class="card"><a href="Turkish_Population_2024.html">Population (2024)</a></div>
       </div>
-    </section>
-
+    </div>
   </main>
 
   <footer>
     &copy; 2025 Pablo Ardura · Built with Plotly & Mapbox
   </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("themeBtn").addEventListener("click", toggleTheme);
+    });
+
+    function toggleSection(sectionElement) {
+      sectionElement.classList.toggle('collapsed');
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+  </script>
 
 </body>
 </html>
