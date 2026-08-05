@@ -7,6 +7,7 @@
   var scriptUrl = document.currentScript && document.currentScript.src;
   var rootUrl = scriptUrl ? new URL("../../", scriptUrl).href : "./";
   var state = { locale: DEFAULT_LOCALE, namespaces: ["common"], messages: {} };
+  var catalogCache = {};
 
   function normalizeLocale(locale) {
     if (!locale) return null;
@@ -32,10 +33,14 @@
   }
 
   async function fetchMessages(locale, namespace) {
-    var response = await global.fetch(rootUrl + "lang/" + locale + "/" + namespace + ".json", { cache: "no-cache" });
-    if (!response.ok) throw new Error("Unable to load " + locale + "/" + namespace);
-    return response.json();
-  }
+      var cacheKey = locale + "|" + namespace;
+      if (catalogCache[cacheKey]) return catalogCache[cacheKey];
+      var response = await global.fetch(rootUrl + "lang/" + locale + "/" + namespace + ".json", { cache: "no-cache" });
+      if (!response.ok) throw new Error("Unable to load " + locale + "/" + namespace);
+      var json = await response.json();
+      catalogCache[cacheKey] = json;
+      return json;
+    }
 
   async function loadNamespace(locale, namespace) {
     var fallback = locale === DEFAULT_LOCALE ? {} : await fetchMessages(DEFAULT_LOCALE, namespace);
@@ -88,6 +93,7 @@
   global.i18n = {
     init: async function (options) {
       options = options || {};
+      if (options.baseUrl) rootUrl = options.baseUrl;
       var namespace = options.namespace || "common";
       state.namespaces = Array.isArray(namespace) ? namespace : namespace === "common" ? ["common"] : ["common", namespace];
       return activate(options.locale || preferredLocale());
