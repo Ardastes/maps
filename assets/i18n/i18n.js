@@ -35,11 +35,23 @@
   async function fetchMessages(locale, namespace) {
       var cacheKey = locale + "|" + namespace;
       if (catalogCache[cacheKey]) return catalogCache[cacheKey];
-      var response = await global.fetch(rootUrl + "lang/" + locale + "/" + namespace + ".json", { cache: "no-cache" });
-      if (!response.ok) throw new Error("Unable to load " + locale + "/" + namespace);
-      var json = await response.json();
-      catalogCache[cacheKey] = json;
-      return json;
+      // Cache the in-flight promise so concurrent requests deduplicate.
+      var p = global.fetch(rootUrl + "lang/" + locale + "/" + namespace + ".json", { cache: "no-cache" })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Unable to load " + locale + "/" + namespace);
+          return response.json();
+        })
+        .then(function (json) {
+          catalogCache[cacheKey] = json; // replace the promise with the resolved value for fast sync access
+          return json;
+        })
+        .catch(function (err) {
+          // On failure, remove the cache entry so future attempts can retry.
+          if (catalogCache[cacheKey] === p) delete catalogCache[cacheKey];
+          throw err;
+        });
+      catalogCache[cacheKey] = p;
+      return p;
     }
 
   async function loadNamespace(locale, namespace) {
@@ -93,7 +105,7 @@
   global.i18n = {
     init: async function (options) {
       options = options || {};
-      if (options.baseUrl) rootUrl = options.baseUrl;
+      if (options.baseUrl) rootUrl = options.baseUrl.replace(/\/?$/, "/");
       var namespace = options.namespace || "common";
       state.namespaces = Array.isArray(namespace) ? namespace : namespace === "common" ? ["common"] : ["common", namespace];
       return activate(options.locale || preferredLocale());
