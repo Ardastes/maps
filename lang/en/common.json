@@ -1,0 +1,19 @@
+{
+  "language": "Language",
+  "legend": "Legend",
+  "download": "Download",
+  "reset_view": "Reset view",
+  "zoom_in": "Zoom in",
+  "zoom_out": "Zoom out",
+  "search": "Search",
+  "loading": "Loading...",
+  "close": "Close",
+  "municipality": "Municipality",
+  "province": "Province",
+  "population": "Population",
+  "value": "Value",
+  "title": "Title",
+  "description": "Description",
+  "source": "Source",
+  "select_language": "Select language"
+}
