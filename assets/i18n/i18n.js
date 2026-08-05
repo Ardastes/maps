@@ -6,7 +6,7 @@
   var locales = global.I18N_LOCALES || {};
   var scriptUrl = document.currentScript && document.currentScript.src;
   var rootUrl = scriptUrl ? new URL("../../", scriptUrl).href : "./";
-  var state = { locale: DEFAULT_LOCALE, namespace: "common", messages: {} };
+  var state = { locale: DEFAULT_LOCALE, namespaces: ["common"], messages: {} };
 
   function normalizeLocale(locale) {
     if (!locale) return null;
@@ -37,7 +37,7 @@
     return response.json();
   }
 
-  async function load(locale, namespace) {
+  async function loadNamespace(locale, namespace) {
     var fallback = locale === DEFAULT_LOCALE ? {} : await fetchMessages(DEFAULT_LOCALE, namespace);
     try {
       var messages = await fetchMessages(locale, namespace);
@@ -47,6 +47,13 @@
       console.warn("i18n fallback:", error);
       return fallback;
     }
+  }
+
+  async function load(locale, namespaces) {
+    var dictionaries = await Promise.all(namespaces.map(function (namespace) {
+      return loadNamespace(locale, namespace);
+    }));
+    return Object.assign.apply(Object, [{}].concat(dictionaries));
   }
 
   function translate(key, replacements) {
@@ -71,17 +78,18 @@
 
   async function activate(locale) {
     state.locale = normalizeLocale(locale) || DEFAULT_LOCALE;
-    state.messages = await load(state.locale, state.namespace);
+    state.messages = await load(state.locale, state.namespaces);
     document.documentElement.lang = state.locale;
     apply();
-    document.dispatchEvent(new CustomEvent("i18n:change", { detail: { locale: state.locale, namespace: state.namespace } }));
+    document.dispatchEvent(new CustomEvent("i18n:change", { detail: { locale: state.locale, namespace: state.namespaces } }));
     return state.locale;
   }
 
   global.i18n = {
     init: async function (options) {
       options = options || {};
-      state.namespace = options.namespace || "common";
+      var namespace = options.namespace || "common";
+      state.namespaces = Array.isArray(namespace) ? namespace : namespace === "common" ? ["common"] : ["common", namespace];
       return activate(options.locale || preferredLocale());
     },
     setLocale: async function (locale) {
