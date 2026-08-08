@@ -6,3 +6,16 @@
 </body>
 </html>
 
+<script src="assets/i18n/locales.js"></script>
+<script src="assets/i18n/i18n.js"></script>
+<script src="assets/i18n/language-selector.js"></script>
+<script src="assets/i18n/plotly-adapter.js"></script>
+<script>
+(async function(){
+  try {
+    await i18n.init({ namespace: 'common' });
+    createLanguageSelector();
+    localizePlotlyMaps({});
+  } catch(e){ console.error('i18n init failed', e); }
+})();
+</script>
